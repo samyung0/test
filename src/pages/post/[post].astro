@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from "astro";
+import getPost from "../../util/getPost";
+import Layout from "../../layouts/Layout.astro";
+
+type Props = {
+  post: string;
+};
+
+export const getStaticPaths = (async () => {
+  const posts = await getPost();
+  return posts.map((post) => {
+    return {
+      params: {
+        post: post.slug,
+      },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.params;
+const posts = await getPost(post);
+const currentPost = posts.find((fetchedPost) => fetchedPost.slug === post)!;
+---
+
+<Layout title={currentPost.title}>
+  <main class="prose mx-auto my-12">
+    <h1>{currentPost.title}</h1>
+    <div>{currentPost.date}</div>
+    <div class="flex justify-center">
+      <img
+        class="object-contain h-[400px] w-auto"
+        src={currentPost.coverImage.url}
+        alt={currentPost.coverImage.altText}
+        width={currentPost.coverImage.width}
+        height={currentPost.coverImage.height}
+      />
+    </div>
+    <article set:html={currentPost.content.html} />
+  </main>
+</Layout>
